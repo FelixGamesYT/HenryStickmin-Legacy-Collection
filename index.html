@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#101318">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Henry Stickmin Legacy Collection — Mobile Web Edition</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <!-- Fundo estilizado estilo Flash 2000s / Sketchbook -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
+
+  <!-- TELA DO LAUNCHER -->
+  <main id="launcher-screen" class="screen active">
+    <header class="launcher-header">
+      <div class="badge-era">NEWGROUNDS / FLASH ERA • 2007–2015</div>
+      <div class="title-box">
+        <div class="stickman-emblem" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="44" height="44">
+            <circle cx="32" cy="16" r="10" fill="#ffffff" stroke="#111111" stroke-width="3.5"/>
+            <line x1="32" y1="26" x2="32" y2="44" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="31" x2="18" y2="39" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="31" x2="46" y2="25" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="44" x2="21" y2="58" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="32" y1="44" x2="44" y2="57" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <h1>HENRY STICKMIN</h1>
+          <p class="subtitle">LEGACY COLLECTION <span class="edition-tag">MOBILE WEB EDITION</span></p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div id="ruffle-status-pill" class="status-pill status-checking" role="status">
+          <span class="dot"></span>
+          <span id="ruffle-status-text">Verificando Ruffle local...</span>
+        </div>
+        <button id="btn-launcher-fullscreen" class="tool-btn" type="button" title="Alternar Tela Cheia">
+          <span class="icon">⛶</span>
+          <span>Tela Cheia</span>
+        </button>
+        <button id="btn-help-modal" class="tool-btn" type="button" title="Estrutura de Arquivos">
+          <span class="icon">?</span>
+          <span>Arquivos</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="games-section" aria-label="Lista de Episódios">
+      <div id="games-grid" class="games-grid">
+        <!-- Cards renderizados dinamicamente via ./js/app.js -->
+      </div>
+    </section>
+
+    <footer class="launcher-footer">
+      <p>Toque em um episódio para iniciar • Ruffle Web Local &amp; Modo Paisagem</p>
+    </footer>
+  </main>
+
+  <!-- TELA DO PLAYER -->
+  <section id="player-screen" class="screen hidden" aria-label="Player do Jogo">
+    <!-- Barra superior compacta -->
+    <header id="player-topbar" class="player-topbar">
+      <button id="btn-back" class="player-btn btn-danger" type="button">
+        <span>←</span> Voltar
+      </button>
+
+      <div class="player-now-playing">
+        <span id="player-ep-badge" class="ep-mini-badge">EP 00</span>
+        <h2 id="player-game-title">Carregando...</h2>
+      </div>
+
+      <div class="player-controls">
+        <button id="btn-aspect" class="player-btn" type="button" title="Alternar Proporção (Ajustar / Esticar)">
+          <span id="aspect-label">4:3 Fit</span>
+        </button>
+        <button id="btn-restart" class="player-btn" type="button" title="Reiniciar Jogo">
+          <span>↻</span> Reiniciar
+        </button>
+        <button id="btn-player-fullscreen" class="player-btn btn-accent" type="button" title="Tela Cheia">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Aviso de orientação retrato no celular -->
+    <div id="orientation-banner" class="orientation-banner hidden" role="alert">
+      <span>📱 Gire o celular para a horizontal (paisagem) para melhor experiência!</span>
+      <button id="btn-dismiss-orientation" type="button" aria-label="Fechar aviso">✕</button>
+    </div>
+
+    <!-- Palco principal do Ruffle -->
+    <div id="stage-wrapper" class="stage-wrapper">
+      <div id="ruffle-stage" class="ruffle-stage aspect-fit"></div>
+
+      <!-- Overlay de Carregamento -->
+      <div id="player-loading" class="player-overlay hidden">
+        <div class="flash-loader">
+          <div class="loader-bar-outer">
+            <div class="loader-bar-inner"></div>
+          </div>
+          <p class="loader-title">CARREGANDO SWF...</p>
+          <p id="loading-path-text" class="loader-sub">./assets/games/...</p>
+        </div>
+      </div>
+
+      <!-- Overlay de Erro / Arquivo Ausente -->
+      <div id="player-error" class="player-overlay hidden">
+        <div class="error-card">
+          <div class="error-stamp">FAIL!</div>
+          <h3 id="error-title">Arquivo do Jogo Ausente</h3>
+          <p id="error-message">O arquivo SWF não foi encontrado na pasta configurada.</p>
+          <div class="error-path-box">
+            <span>Caminho relativo esperado:</span>
+            <code id="error-expected-path">./assets/games/jogo.swf</code>
+          </div>
+          <p id="error-hint" class="error-hint">
+            Envie o arquivo <code>.swf</code> para este caminho no repositório e tente novamente.
+          </p>
+          <div class="error-actions">
+            <button id="btn-retry-game" class="player-btn btn-accent" type="button">↻ Tentar Novamente</button>
+            <button id="btn-error-back" class="player-btn" type="button">← Voltar ao Menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL DE INSTRUÇÕES DE ARQUIVOS -->
+  <div id="setup-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Estrutura de Arquivos no Repositório</h3>
+        <button id="btn-close-modal" class="close-modal-btn" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>Todos os caminhos são relativos e compatíveis com subdiretórios do GitHub Pages (ex: <code>usuario.github.io/repositorio/</code>).</p>
+        
+        <h4>1. Motor Ruffle Web (<code>./ruffle/</code>)</h4>
+        <ul class="file-list">
+          <li><code>./ruffle/ruffle.js</code></li>
+          <li><code>./ruffle/*.wasm</code> e chunks <code>.js</code> do pacote self-hosted</li>
+        </ul>
+
+        <h4>2. Jogos Flash (<code>./assets/games/</code>)</h4>
+        <ul class="file-list">
+          <li><code>./assets/games/flash_crossingthepit.swf</code></li>
+          <li><code>./assets/games/breakingthebank.swf</code></li>
+          <li><code>./assets/games/escapingtheprisongame.swf</code></li>
+          <li><code>./assets/games/stealingthediamondgame.swf</code></li>
+          <li><code>./assets/games/infiltratingtheairshipgame.swf</code></li>
+          <li><code>./assets/games/fleeing_the_complex.swf</code></li>
+        </ul>
+
+        <h4>3. Capas dos Jogos (<code>./assets/images/</code>)</h4>
+        <ul class="file-list">
+          <li><code>./assets/images/crossing_the_pit.jpg</code> (ou .png / .webp)</li>
+          <li><code>./assets/images/breaking_the_bank.jpg</code></li>
+          <li><code>./assets/images/escaping_the_prison.jpg</code></li>
+          <li><code>./assets/images/stealing_the_diamond.jpg</code></li>
+          <li><code>./assets/images/infiltrating_the_airship.jpg</code></li>
+          <li><code>./assets/images/fleeing_the_complex.jpg</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuração prévia do Ruffle antes de carregar ./ruffle/ruffle.js -->
+  <script>
+    (function () {
+      // Calcula a URL relativa da pasta ./ruffle/ com base na página atual,
+      // garantindo resolução correta tanto na raiz quanto em subpastas do GitHub Pages (/nome-do-repo/)
+      var ruffleBaseUrl = new URL("./ruffle/", window.location.href).href;
+
+      window.RufflePlayer = window.RufflePlayer || {};
+      window.RufflePlayer.config = {
+        publicPath: ruffleBaseUrl,
+        autoplay: "on",
+        unmuteOverlay: "visible",
+        backgroundColor: "#000000",
+        letterbox: "on",
+        contextMenu: "off",
+        showSwfDownload: false,
+        splashScreen: false,
+        scale: "showAll",
+        forceScale: true,
+        quality: "high"
+      };
+    })();
+  </script>
+  <script src="./ruffle/ruffle.js" onerror="window.__RUFFLE_LOAD_FAILED__ = true;"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
